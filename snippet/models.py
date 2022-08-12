@@ -51,7 +51,11 @@ class Products(models.Model):
     def __str__(self):
         return self.name
     class Meta:
+        permissions = (
+            ("manager_permission", "Manager Permission"),
+        )
         ordering = ['created']
+        
 
 
 class Sales(models.Model):
@@ -73,11 +77,27 @@ class Sales(models.Model):
                          decimal_places = 2)
     created = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return self.name
+  
     class Meta:
         ordering = ['created']
     @property
     def qty_estimation_price(self):
         return None
 
+
+class Pickup(models.Model):
+    user = models.ForeignKey(
+        get_user_model(),
+        on_delete=models.CASCADE,
+        null=True
+    )
+    sale = models.ForeignKey(
+        Sales,
+        on_delete=models.CASCADE,
+        null=True
+    )
+    address = models.TextField(null=True,blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created']

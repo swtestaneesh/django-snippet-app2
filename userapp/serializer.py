@@ -3,6 +3,7 @@ from rest_framework import serializers
 from allauth.account.adapter import get_adapter
 from main import settings
 from .models import User
+from django.contrib.auth.models import Group
 # from allauth.account.utils import setup_user_email
 
 
@@ -11,7 +12,11 @@ class RegisterSerializer(serializers.Serializer):
     first_name = serializers.CharField(required=False, write_only=True)
     last_name = serializers.CharField(required=False, write_only=True)
     address = serializers.CharField(required=False, write_only=True)
-
+    GROUP_CHOICES = (
+        ('customer', 'customer'),
+        ('manager', 'manager'),
+    )
+    group = serializers.ChoiceField(choices=GROUP_CHOICES)
     password1 = serializers.CharField(required=True, write_only=True,label ="Password")
     password2 = serializers.CharField(required=True, write_only=True,label ="Confirm Password")
 
@@ -38,6 +43,8 @@ class RegisterSerializer(serializers.Serializer):
         user = adapter.new_user(request)
         self.cleaned_data = self.get_cleaned_data()
         adapter.save_user(request, user, self)
+        my_group = Group.objects.get(name=self.validated_data.get('group', '')) 
+        my_group.user_set.add(user)
         # setup_user_email(request, user, [])
         return user
 

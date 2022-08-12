@@ -1,6 +1,6 @@
 from decimal import Decimal
 from rest_framework import serializers
-from snippet.models import Products, Sales, Tags, Snippets
+from snippet.models import Pickup, Products, Sales, Tags, Snippets
 from django.core.validators import DecimalValidator
 from rest_framework.reverse import reverse
 
@@ -194,3 +194,30 @@ class SalesApiViewSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
     
+
+class PickupApiViewSerializer(serializers.ModelSerializer):
+    user = serializers.SlugRelatedField(
+            read_only=True,
+            slug_field='username'
+        )
+    def __init__(self, *args, **kwargs):
+        self.sale = kwargs.pop("sale")
+        super().__init__(*args, **kwargs)
+       
+    class Meta:
+        model = Pickup
+        fields = ['id', 'address','user']
+        read_only_fields = ['user']
+    def validate(self, attrs):
+        #only logged user can update own data only
+        if self.instance:
+            if  self.context['request'].user.pk != self.instance.user.pk:
+                raise serializers.ValidationError({"user": "the user not access for update"})
+        else:
+            attrs['user'] = self.context['request'].user
+        attrs['sale'] = self.sale
+        return attrs
+
+    def create(self, validated_data):
+        instance = super(PickupApiViewSerializer, self).create(validated_data)
+        return instance
