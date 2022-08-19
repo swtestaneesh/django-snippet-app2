@@ -6,14 +6,14 @@ from django.utils import timezone
 
 class UserManager(BaseUserManager):
 
-    def _create_user(self, username, email, password, is_staff, is_superuser, **extra_fields):
+    def _create_user(self, username, email, password, is_staff, is_superuser,address, **extra_fields):
         now = timezone.now()
         if not username:
             raise ValueError(('The given username must be set'))
         email = self.normalize_email(email)
         user = self.model(username=username, email=email,
                           is_staff=is_staff, is_active=True,
-                          is_superuser=is_superuser, last_login=now,
+                          is_superuser=is_superuser, address=address, last_login=now,
                           date_joined=now, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
@@ -40,7 +40,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     date_joined = models.DateTimeField(default=timezone.now)
-
+    address = models.CharField(max_length=500, blank=True, null=True)
     objects = UserManager()
 
     USERNAME_FIELD = 'username'

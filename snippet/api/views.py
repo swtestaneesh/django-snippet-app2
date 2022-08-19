@@ -1,5 +1,6 @@
 from rest_framework import viewsets
 from rest_framework.response import Response
+from snippet.api.permissions import PermissionViewApi, PermissionViewApiCustomer, PermissionViewSetManager
 from snippet.models import Pickup, Snippets, Tags,Products,Sales
 from .serializer import PickupApiViewSerializer, ProductsSerializer, SalesSerializer, SnippetsSerializer, TagsSerializer,SalesApiViewSerializer
 from django.core.exceptions import ObjectDoesNotExist
@@ -49,12 +50,8 @@ class TagsViewSet(viewsets.ModelViewSet):
 #if request.user.has_perm('app_name.can_add_cost_price'):
 
 # @method_decorator(permission_required("manager_permission"), name="dispatch")
-class ProductViewSet(viewsets.ModelViewSet):
+class ProductViewSet(PermissionViewSetManager):
     serializer_class = ProductsSerializer
-    permission_classes_by_action = {'create': [IsAuthenticated],
-                                    'update': [IsAuthenticated],
-                                    'destroy':[IsAuthenticated],
-                                    }
     # renderer_classes = [TemplateHTMLRenderer]
     # template_name = 'snippet/product.html'
     def get_queryset(self):
@@ -76,13 +73,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         except Http404:
             pass
         return self.list(request, *args, **kwargs)
-    def get_permissions(self):
-        try:
-            # return permission_classes depending on action 
-            return [permission() for permission in self.permission_classes_by_action[self.action]]
-        except KeyError: 
-            # when exception occure jump to default permission_classes
-            return [permission() for permission in self.permission_classes]
+
 
 class SalesViewSet(viewsets.ModelViewSet):
     serializer_class = SalesSerializer
@@ -112,7 +103,7 @@ class SalesViewSet(viewsets.ModelViewSet):
             return [permission() for permission in self.permission_classes]
 
 
-class SalesApiView(APIView):
+class SalesApiView(PermissionViewApi):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'snippet/sales.html'
     # def get(self, request):

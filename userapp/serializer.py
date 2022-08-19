@@ -36,12 +36,14 @@ class RegisterSerializer(serializers.Serializer):
             'user_type': self.validated_data.get('user_type', ''),
             'password1': self.validated_data.get('password1', ''),
             'email': self.validated_data.get('email', ''),
+            'address': self.validated_data.get('address', ''),
         }
 
     def save(self, request):
         adapter = get_adapter()
         user = adapter.new_user(request)
         self.cleaned_data = self.get_cleaned_data()
+        user.address = self.cleaned_data.get('address', '')
         adapter.save_user(request, user, self)
         my_group = Group.objects.get(name=self.validated_data.get('group', '')) 
         my_group.user_set.add(user)
@@ -59,5 +61,5 @@ class UserDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('pk', 'username', 'email', 'first_name',
-                  'last_name')
+                  'last_name',"address")
         read_only_fields = ('email', )
